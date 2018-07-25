@@ -10,7 +10,7 @@ tmp = unstack(vdendool)
 
 ## create random points
 set.seed(123)
-pts = sampleRandom(vdendool, size = 5, sp = TRUE)
+pts = as(sampleRandom(vdendool, size = 5, sp = TRUE), "SpatialPoints")
 
 coords = coordinates(pts)
 
