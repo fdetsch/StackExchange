@@ -41,3 +41,12 @@ my.chart = xyplot(Sepal.Length + Sepal.Width ~ Petal.Length + Petal.Width,
 
 my.chart$legend$left$fun = "drawComboKey" # change position according to 'space'
 plot(my.chart)
+
+## using x, y instead of space
+my.chart = xyplot(Sepal.Length + Sepal.Width ~ Petal.Length + Petal.Width, 
+                  data = iris, type = "b",
+                  auto.key = list(x = .5, y = .5, lines = TRUE, points = TRUE)
+)
+
+my.chart$legend$inside$fun = "drawComboKey" # change position according to 'space'
+plot(my.chart)
