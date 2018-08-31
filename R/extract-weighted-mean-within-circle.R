@@ -5,14 +5,14 @@ WOA <- readRDS('data/WOA.RDS')
 
 xy <- data.frame(x = -40, y = 60)
 
-## transform point data into 'SpatialPoints'
+## transform point data to 'SpatialPoints'
 coordinates(xy) <- ~ x + y
 proj4string(xy) <- "+init=epsg:4326"
 
 ## create 100-km buffer
-xy_3857 = spTransform(xy, CRS("+init=epsg:3857"))
-gbf_3857 = rgeos::gBuffer(xy_3857, width = 1e5, quadsegs = 250L)
-gbf = spTransform(gbf_3857, CRS("+init=epsg:4326"))
+xy_utm = spTransform(xy, CRS("+init=epsg:32621"))
+gbf_utm = rgeos::gBuffer(xy_utm, width = 1e5, quadsegs = 250L)
+gbf = spTransform(gbf_utm, CRS(proj4string(xy)))
 
 ## extract values and calculate weighted mean
 vls = extract(WOA, gbf, weights = TRUE)[[1]]
