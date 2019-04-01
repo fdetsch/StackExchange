@@ -81,7 +81,7 @@ for i in range(len(y)):
 
 ## display sample vs. predicted data
 plt.scatter(range(len(x)), x, color='#3c8dbc', label = 'observed') # blue
-plt.scatter(range(len(x)), y, color='#f39c12', label = 'predicted') # orange
+plt.scatter(range(len(x)), y, color='#f39c12', label = 'predicted', s = 5) # orange
 plt.hlines(0, xmin = 0, xmax = len(x), colors = 'grey', linestyles = 'dashed')
 plt.xlabel("Index")
 plt.ylabel("Offset")
