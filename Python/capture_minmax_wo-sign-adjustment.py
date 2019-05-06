@@ -19,7 +19,7 @@ import random
 
 ### . sample data ----
 
-x = np.sin(np.arange(.01, 4000 * .01, .01))
+x = np.sin(np.arange(.01, 4000 * .01, .01)) * 10
 
 
 ### NEAT ALGORITHM ====
