@@ -37,6 +37,11 @@ def eval_genomes(genomes, config):
 
 # . neat run ----
 
+## checkpoints target folder
+odr = 'neat-checkpoints'
+if not os.path.exists(odr):
+  os.mkdir(odr)
+
 def run(config_file, n = None):
   # load configuration
   config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -48,7 +53,7 @@ def run(config_file, n = None):
   p.add_reporter(neat.StdOutReporter(True))
   stats = neat.StatisticsReporter()
   p.add_reporter(stats)
-  p.add_reporter(neat.Checkpointer(5))
+  p.add_reporter(neat.Checkpointer(5, filename_prefix = "neat-checkpoints/neat-checkpoint-))
   # run for up to n generations
   winner = p.run(eval_genomes, n)
   return(winner)
