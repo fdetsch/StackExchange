@@ -1,0 +1,61 @@
+---
+title: "Answer to ['Adjust text font size in plotting autofitvariogram in R?'](https://gis.stackexchange.com/questions/234221/adjust-text-font-size-in-plotting-autofitvariogram-in-r/234938?noredirect=1#comment539490_234938)"
+date: "Last edited: `r Sys.time()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The text size of bottom-right annotations is hard-coded in [autokrige.vgm.panel.r](https://github.com/cran/automap/blob/master/R/autokrige.vgm.panel.r), which runs under the hood of **automap**'s `plot()` method. The latter function is also responsible for creating point labels that are passed to `gstat::vgm.panel.xyplot()`, which is hard-coded as well. Now, you might get rid of these point labels through something like
+
+```{r, message = FALSE}
+## sample data
+library(automap)
+data(meuse)
+coordinates(meuse) <- ~ x + y
+afv <- autofitVariogram(formula = zinc ~ 1, input_data = meuse)
+p <- plot(afv, plotit = FALSE)
+
+## discard point labels
+library(lattice)
+opts <- trellis.par.get()
+opts$add.text$col <- "transparent"
+update(p, par.settings = opts)
+```
+
+or, similarly, `opts$add.text$cex` to reduce text size. However, this won't affect the bottom-right text section. In order to overcome this limitation, why not just define your own plotting function for objects of class 'autofitVariogram'? Taking inspiration from the source code of [autokrige.vgm.panel.r](https://github.com/cran/automap/blob/master/R/autokrige.vgm.panel.r), this requires little coding efforts and, at the same time, lets you modify the visual appearance of the resulting scatter plot at will. 
+
+```{r}
+## create custom text annotation
+dgt <- function(x) if (x >= 10) 0 else if (x >= 1) 1 else 2
+
+mdl <- afv$var_model
+cls <- as.character(mdl[2, "model"])
+ngt <- sum(mdl[1, "psill"])
+sll <- sum(mdl[, "psill"])
+rng <- sum(mdl[, "range"])
+lbl <- paste("Model:", cls,
+             "\nNugget:", round(ngt, dgt(ngt)),
+             "\nSill:", round(sll, dgt(sll)),
+             "\nRange:", round(rng, dgt(rng)))
+
+if (cls %in% c("Mat", "Ste")) {
+  kpp <- mdl[2, "kappa"]
+  lbl <- paste(lbl, "\nKappa:", round(kpp, dgt(kpp)), "")
+}
+
+## create plot
+xyplot(gamma ~ dist, data = afv$exp_var,
+       main = "Experimental variogram and fitted variogram model", 
+       xlab = "Distance", ylab = "Semi-variance",
+       panel = function(x, y, ...) {
+         gstat::vgm.panel.xyplot(x, y, cex = 1.2, ...)
+         ltext(max(x), 0.2 * max(y), lbl, font = 2, cex = .9, adj = c(1, 0), 
+               col = "grey30")
+       }, 
+       # arguments required by gstat::vgm.panel.xyplot()
+       labels = NULL, mode = "direct", model = mdl, 
+       direction = c(afv$exp_var$dir.hor[1], afv$exp_var$dir.ver[1]))
+```
