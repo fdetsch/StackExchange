@@ -6,7 +6,6 @@ output: html_document
 Available online [here](https://stackoverflow.com/questions/63358511/create-interactive-bar-chart-with-shared-data-filtered-by-time-range).
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
-library(data.table)
 library(crosstalk)
 library(plotly)
 
