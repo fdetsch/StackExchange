@@ -2,21 +2,38 @@
 # (available online: https://stackoverflow.com/questions/48667477/how-do-i-consume-an-array-of-json-objects-using-plumber-in-r)
 
 #* @post /score
-score = function(data){
+score = function(Gender, State){
   
-  # dat = data.frame(
+  # ## sample data
+  # lst = list(
   #   Gender = c("F", "F", "M")
   #   , State = c("AZ", "NY", "DC")
   # )
   # 
-  # jsonlite::toJSON(
-  #   dat
-  #   , dataframe = "columns"
+  # ## jsonify
+  # jsn = lapply(
+  #   lst
+  #   , toJSON
   # )
   
-  lst = jsonlite::fromJSON(data)
   lapply(
-    lst
+    list(Gender, State)
     , as.factor
   )
+  
+  # request = POST(
+  #   url = "http://localhost:8000/score?"
+  #   , query = jsn # values must be length 1
+  # )
+  # 
+  # ## query
+  # response = content(
+  #   request
+  #   , as = "text"
+  #   , encoding = "UTF-8"
+  # )
+  # 
+  # fromJSON(
+  #   response
+  # )
 }
