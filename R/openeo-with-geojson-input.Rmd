@@ -1,0 +1,106 @@
+---
+title: "openeo-python-client w/.geojson input"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Available online: [Open-EO/openeo-geopyspark-driver#89](https://github.com/Open-EO/openeo-geopyspark-driver/issues/89#issuecomment-878979245)
+
+```{r, message = FALSE}
+### pkgs ----
+
+library(sf)
+library(mapview)
+library(reticulate)
+
+
+### aoi ----
+
+## write sample aoi to .geojson
+tmp = tempfile(
+  fileext = ".geojson"
+)
+
+franconia |> 
+  st_cast(
+    "POLYGON"
+    , warn = FALSE
+  ) |> 
+  st_write(
+    dsn = tmp
+    , quiet = TRUE
+    , delete_dsn = TRUE
+  )
+
+## define target file for download
+ofl = tempfile(
+  fileext = ".ncdf"
+)
+
+```
+
+```{python}
+### mdls ----
+
+import openeo
+import json
+
+
+### area of interest ----
+
+with open(r.tmp) as f:
+    aoi = json.load(f)
+
+jsn = aoi['features'][0]['geometry']
+print(jsn)
+
+
+### openeo ----
+
+## connect backend
+con = openeo.connect(
+    'https://openeo.vito.be'
+).authenticate_oidc('egi')
+
+## load collection
+datacube = con.load_collection(
+    'SENTINEL2_L2A_SENTINELHUB'
+    , spatial_extent = jsn
+    , temporal_extent = ['2021-06-01','2021-06-10']
+    , bands = ['B04', 'B08']
+)
+
+## add index layer
+datacube = datacube.ndvi(
+    nir = 'B08'
+    , red = 'B04'
+    , target_band = 'ndvi'
+)
+
+## download data
+datacube.download(
+    outputfile = r.ofl
+    , format = 'NetCDF'
+)
+
+```
+
+```{r, echo = FALSE}
+library(stars)
+
+strs = read_ncdf(
+  ofl
+) |> 
+  st_set_crs(
+    32632
+  )
+
+plot(
+  strs["ndvi"]
+)
+
+```
+
