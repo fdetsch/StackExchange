@@ -13,6 +13,7 @@
 #' Available online [here](https://github.com/Open-EO/openeo-python-client/issues/221).
 
 import openeo
+import tempfile
 
 con = openeo.connect(
     'https://openeo.vito.be'
@@ -42,13 +43,37 @@ ndvicube = datacube.ndvi(
     , target_band = 'ndvi'
 )
 
+
+### via `reduce_dimension()` ----
+### (see https://github.com/Open-EO/openeo-geopyspark-driver/issues/91)
+
 # get last valid value per pixel
 lastcube = ndvicube.reduce_dimension(
     dimension = 't'
     , reducer = 'last'
 )
 
+
+### via user-defined function ----
+### (see https://github.com/Open-EO/openeo-geopyspark-driver/issues/90)
+
+udf = '''
+import xarray
+from openeo_udf.api.datacube import DataCube
+
+def apply_datacube(cube: DataCube, context: dict) -> DataCube:
+    array: xarray.DataArray = cube.get_array()
+    last = array.tail({"t": 1})
+    return DataCube(last)
+'''
+
+lastcube = ndvicube.apply_dimension(
+    code = udf
+    , runtime = 'Python'
+)
+
+## download results
 lastcube.download(
-    'last.ncdf'
+    tempfile.gettempdir() + '/ndvi_tail.ncdf'
     , format = 'NetCDF'
 )
