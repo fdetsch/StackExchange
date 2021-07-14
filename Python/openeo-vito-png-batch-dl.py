@@ -17,12 +17,14 @@
 import openeo
 from openeo.processes import ProcessBuilder
  
+import tempfile
+
 
 ### openEO ----
  
 ## connect backend
 con = openeo.connect(
-    'https://openeo-dev.vito.be'
+    'https://openeo.vito.be'
 ).authenticate_oidc('egi')
  
 ## define child process for linear scaling
@@ -61,7 +63,7 @@ scalecube = ndvicube.apply(scale_)
  
 ## download directly
 scalecube.download(
-    outputfile = 'ndvi.png'
+    outputfile = tempfile.gettempdir() + '/ndvi.png'
     , format = 'PNG'
 )
 
@@ -79,5 +81,5 @@ results = job.get_results()
 # results.get_metadata()
 
 ofile = results.download_file(
-    'ndvi_batch.png'
+    tempfile.gettempdir() + '/ndvi_batch.png'
 )
