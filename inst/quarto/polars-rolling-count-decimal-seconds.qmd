@@ -131,6 +131,8 @@ What's strange is that in R, decimal seconds are not printed despite the indicat
 
 ### Parse date strings in polars
 
+See [pola-rs/r-polars/issues/578#issuecomment-1845542575](https://github.com/pola-rs/r-polars/issues/578#issuecomment-1845542575).
+
 ```{r solution-parse-strings}
 if (utils::packageVersion("polars") >= "0.11.0.9001") {
   
@@ -157,6 +159,8 @@ if (utils::packageVersion("polars") >= "0.11.0.9001") {
 
 ### Manual conversion
 
+See [pola-rs/r-polars/issues/578#issuecomment-1846073495](https://github.com/pola-rs/r-polars/issues/578#issuecomment-1846073495).
+
 ```{r solution-manual-conversion}
 x1 = as.POSIXct(
   x
@@ -173,7 +177,42 @@ pl$
       alias("raw_value")
     , (pl$lit(as.numeric(x1)) * 1000)$
         cast(pl$Datetime("ms",tz = "UTC"))$
-        alias("ts_manual")
+        alias("ts_manual")$
+        set_sorted()
+  )$
+  with_columns(
+    "n" = pl$count("ts")$
+      rolling(
+        index_column = "ts_manual",
+        period = "1s",
+        closed = "both"
+      )
   )
+
+```
+
+
+### Use slider package
+
+See [pola-rs/r-polars/issues/578#issuecomment-1847345605](https://github.com/pola-rs/r-polars/issues/578#issuecomment-1847345605).
+
+```{r solution-slider}
+df = data.frame(
+  "ts" = as.POSIXct(
+    x
+    , tz = "UTC"
+  )
+)
+
+transform(
+  df
+  , n = slider::slide_index_int(
+    .x = ts,
+    .i = ts,
+    .f = \(x) length(x),
+    .before = lubridate::seconds(1),
+    .after = 0L
+  )
+)
 
 ```
