@@ -21,7 +21,6 @@ meuse_lst = split(
   , f = rep(1:2, each = 10L)
 )
 
-
 ### compare concatenated outputs against original data ----
 
 ## base `rbind()`
@@ -31,16 +30,25 @@ meuse_base = do.call(
 )
 
 expect_identical(
-   st_bbox(meuse_base)
+  st_bbox(meuse_base)
   , target = st_bbox(meuse_sf)
   , info = "base `rbind()` produces expected boundary"
+)
+
+## {poorman} `bind_rows()`
+meuse_pm = poorman::bind_rows(meuse_lst)
+
+expect_identical(
+  st_bbox(meuse_pm)
+  , target = st_bbox(meuse_sf)
+  , info = "`poorman::bind_rows()` produces expected boundary"
 )
 
 ## {dplyr} `bind_rows()`
 meuse_dplyr = dplyr::bind_rows(meuse_lst)
 
 expect_identical(
-   st_bbox(meuse_dplyr)
+  st_bbox(meuse_dplyr)
   , target = st_bbox(meuse_sf)
   , info = "`dplyr::bind_rows()` produces expected boundary"
 )
@@ -51,11 +59,12 @@ meuse_dt = st_as_sf(
 )
 
 expect_identical(
-   st_bbox(meuse_dt)
+  st_bbox(meuse_dt)
   , target = st_bbox(meuse_sf)
   , info = "`data.table::rbindlist()` produces expected boundary"
 )
 
+## ensure that point coordinates produced by {data.table} and base are identical
 expect_identical(
   st_coordinates(meuse_dt)
   , target = st_coordinates(meuse_base)
